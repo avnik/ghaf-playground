@@ -1,6 +1,13 @@
+{ lib, ... }:
 {
   # Help disko/nixos-anywhere to find/destroy disk
   disko.devices.disk.disk1.device = "/dev/nvme0n1";
+  ghaf.partitioning.disko.enable = true;
+
+  # Disable plymouth, I need to see how device boot and all error messages 
+  ghaf.graphics.boot.enable = lib.mkForce false;
+  ghaf.profiles.release.enable = lib.mkForce false;
+  ghaf.profiles.debug.enable = lib.mkForce true;
 
   ghaf.reference.personalize.keys = {
     enable = true;
