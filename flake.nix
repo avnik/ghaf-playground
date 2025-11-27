@@ -20,10 +20,10 @@
       systems = [ "x86_64-linux"];
       imports = [ inputs.devshell.flakeModule ];
       flake.nixosConfigurations = {
-        # By unknown reasons, extendModules didn't works well with ghaf
-        notworks = ghaf.nixosConfigurations.lenovo-x1-carbon-gen11-debug.extendModules {
+        # Bare ghaf for lenovo X1 carbon gen11
+        basic = ghaf.nixosConfigurations.lenovo-x1-carbon-gen11-debug.extendModules {
           modules = [
-            ./configuration.nix
+            ./basic.nix
           ];
         };
         carbon =
@@ -36,11 +36,17 @@
             };
             laptop-configuration =  mkLaptopConfiguration "lenovo-x1-carbon-gen11" "debug" (
               [ 
-                ./configuration.nix
                 inputs.ghaf.nixosModules.disko-debug-partition
+                inputs.ghaf.nixosModules.verity-release-partition
                 inputs.ghaf.nixosModules.hardware-lenovo-x1-carbon-gen11
                 inputs.ghaf.nixosModules.reference-profiles
                 inputs.ghaf.nixosModules.profiles
+                ./configuration.nix
+                ({pkgs, ...}: {
+                    environment.systemPackages = [
+                      inputs.ghaf.packages.${pkgs.system}.efiboot-clean
+                    ];
+                })
               ]
             );
           in laptop-configuration.hostConfiguration;
