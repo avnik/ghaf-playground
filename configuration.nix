@@ -20,6 +20,13 @@
     extraModules = [
       ({...}: {
         users.users.ghaf.openssh.authorizedKeys.keys = config.ghaf.reference.personalize.keys.authorizedSshKeys;
+
+        services.openssh.settings.AllowAgentForwarding = "yes";
+
+        programs.ssh.extraConfig = ''
+          Host *
+            ForwardAgent yes
+        '';
       })
     ];
   };
