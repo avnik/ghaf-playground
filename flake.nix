@@ -2,6 +2,7 @@
   inputs = {
     ghaf.url = "github:tiiuae/ghaf";
     flake-parts.follows = "ghaf/flake-parts";
+    gp-gui.follows ="ghaf/gp-gui";
     nixpkgs.follows = "ghaf/nixpkgs"; # Parts require nixpkgs input
     devshell.follows = "ghaf/devshell";
     nixos-anywhere = {
@@ -26,30 +27,11 @@
             ./basic.nix
           ];
         };
-        carbon =
-          let
-            mkLaptopConfiguration = inputs.ghaf.builders.mkLaptopConfiguration {
-              self = inputs.ghaf;
-              inherit inputs;
-              inherit (inputs.ghaf) lib;
-              system = "x86_64-linux";
-            };
-            laptop-configuration =  mkLaptopConfiguration "lenovo-x1-carbon-gen11" "debug" (
-              [ 
-                inputs.ghaf.nixosModules.disko-debug-partition
-                inputs.ghaf.nixosModules.verity-release-partition
-                inputs.ghaf.nixosModules.hardware-lenovo-x1-carbon-gen11
-                inputs.ghaf.nixosModules.reference-profiles
-                inputs.ghaf.nixosModules.profiles
-                ./configuration.nix
-                ({pkgs, ...}: {
-                    environment.systemPackages = [
-                      inputs.ghaf.packages.${pkgs.system}.efiboot-clean
-                    ];
-                })
-              ]
-            );
-          in laptop-configuration.hostConfiguration;
+        carbon = ghaf.nixosConfigurations.lenovo-x1-carbon-gen11-debug.extendModules {
+          modules =  [
+            ./configuration.nix
+          ];
+        };
       };
       perSystem = { system, ... }: {
         devshells.default = {
