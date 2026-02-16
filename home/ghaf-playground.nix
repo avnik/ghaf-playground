@@ -75,6 +75,14 @@ in
           forwardAgent = true;
           extraOptions = insecureHostOptions;
         };
+
+        "${cfg.hostName}-host" = {
+          hostname = "ghaf-host";
+          user = cfg.user;
+          proxyJump = cfg.hostName;
+          forwardAgent = true;
+          extraOptions = insecureHostOptions;
+        };
       }
       // vmMatchBlocks;
     };
