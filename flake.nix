@@ -2,7 +2,6 @@
   inputs = {
     ghaf.url = "github:tiiuae/ghaf";
     flake-parts.follows = "ghaf/flake-parts";
-    gp-gui.follows = "ghaf/gp-gui";
     nixpkgs.follows = "ghaf/nixpkgs"; # Parts require nixpkgs input
     devshell.follows = "ghaf/devshell";
     nixos-anywhere = {
@@ -17,7 +16,7 @@
     };
   };
   outputs =
-    inputs@{ ghaf, ... }:
+    inputs@{ self, ghaf, ... }:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [ "x86_64-linux" ];
       imports = [ inputs.devshell.flakeModule ];
@@ -40,6 +39,15 @@
       perSystem =
         { system, ... }:
         {
+          packages = {
+            carbon-sysupdate = (self.nixosConfigurations.carbon.extendModules {
+              modules = [
+                ({
+                  ghaf.partitioning.verity-volume.enable = true;
+                })
+              ];
+            }).config.system.build.ghafImage;
+          };
           devshells.default = {
             devshell = {
               name = "ghaf-playground";
