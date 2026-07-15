@@ -10,16 +10,31 @@ let
     CheckHostIP = "no";
   };
 
+  defaultHostOptions = {
+    ForwardAgent = false;
+    AddKeysToAgent = "no";
+    Compression = false;
+    ServerAliveInterval = 0;
+    ServerAliveCountMax = 3;
+    HashKnownHosts = false;
+    UserKnownHostsFile = "~/.ssh/known_hosts";
+    ControlMaster = "no";
+    ControlPath = "~/.ssh/master-%r@%n:%p";
+    ControlPersist = "no";
+  };
+
   vmMatchBlocks = lib.listToAttrs (
     map (
       vmName:
-      lib.nameValuePair "${cfg.hostName}-${vmName}" {
-        hostname = vmName;
-        user = cfg.user;
-        proxyJump = cfg.hostName;
-        forwardAgent = true;
-        extraOptions = insecureHostOptions;
-      }
+      lib.nameValuePair "${cfg.hostName}-${vmName}" (
+        {
+        HostName = vmName;
+        User = cfg.user;
+        ProxyJump = cfg.hostName;
+        ForwardAgent = true;
+        }
+        // insecureHostOptions
+      )
     ) cfg.vmNames
   );
 in
@@ -63,28 +78,28 @@ in
   config = lib.mkIf cfg.enable {
     programs.ssh = {
       enable = true;
+      enableDefaultConfig = false;
 
-      matchBlocks = {
-        "*" = {
-          extraOptions = insecureHostOptions;
-        };
+      settings = (
+        {
+        "*" = defaultHostOptions // insecureHostOptions;
 
         "${cfg.hostName}" = {
-          hostname = cfg.hostName;
-          user = cfg.user;
-          forwardAgent = true;
-          extraOptions = insecureHostOptions;
-        };
+          HostName = cfg.hostName;
+          User = cfg.user;
+          ForwardAgent = true;
+        } // insecureHostOptions;
 
         "${cfg.hostName}-host" = {
-          hostname = "ghaf-host";
-          user = cfg.user;
-          proxyJump = cfg.hostName;
-          forwardAgent = true;
-          extraOptions = insecureHostOptions;
-        };
+          HostName = "ghaf-host";
+          User = cfg.user;
+          ProxyJump = cfg.hostName;
+          ForwardAgent = true;
+        } // insecureHostOptions;
+
       }
-      // vmMatchBlocks;
+      // vmMatchBlocks
+      );
     };
   };
 }
